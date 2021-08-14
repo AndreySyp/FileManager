@@ -1,0 +1,213 @@
+﻿<Window x:Class="FileManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" mc:Ignorable="d"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:fa ="http://schemas.fontawesome.com/icons/"
+        xmlns:vm="clr-namespace:FileManager.ViewModels"
+        xmlns:l="clr-namespace:FileManager" 
+        Title="{Binding Path=Title}" 
+        Height="650" Width="1000"
+        MinHeight="400" MinWidth="680">
+    
+    
+    <Window.DataContext>
+        <vm:MainWindowViewModel/>
+    </Window.DataContext>
+    
+    <!--#region HotKey-->
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding CloseApplicationComand}" Gesture="CTRL+Q"/>
+        <KeyBinding Command="{Binding SaveCommand}" Gesture="CTRL+S"/>
+        <KeyBinding Command="{Binding CreateMenuListCommand}" Gesture="CTRL+N"/>
+    </Window.InputBindings>
+    <!--#endregion-->
+    
+    <Grid>
+        
+        <!--#region page layout-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="310"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--#endregion-->
+
+        <!--region HotbarMenu-->
+        <Menu Grid.Row="0" Grid.ColumnSpan="2" Background="#ededed">
+            <MenuItem Header="File">
+                <MenuItem Header="New List" Command="{Binding CreateMenuListCommand}"/>
+                <MenuItem Header="Save" Command="{Binding SaveCommand}"/>
+                <MenuItem Header="Exit" Command="{Binding CloseApplicationComand}"/>
+            </MenuItem>
+            
+            <MenuItem Header="Help">
+                <MenuItem Header="About program"/>
+                <MenuItem Header="HotKey" Command="{Binding HelperOpenCommand}"/>
+            </MenuItem>
+        </Menu>
+        <!--#endregion-->
+
+        <!--#region (LeftPart)-->
+        <GroupBox Header="ListName" Grid.Column="0" Grid.Row="1">
+            <DockPanel>
+                <DockPanel.Resources>
+                    <CollectionViewSource 
+                        x:Key="GroupsCollection" 
+                        Source="{Binding SpaceData}"
+                        Filter="GroupsCillection_OnFilter"
+                    />
+                </DockPanel.Resources>
+
+                <!--#region MenuList (Left Menu)-->              
+                <DockPanel DockPanel.Dock="Top">
+                    <StackPanel Orientation="Horizontal" Background="#fcf7f7" Margin="0,3,0,3">
+
+                        <!--#region Search-->
+                        <DockPanel Margin="3" Width="190">
+                            <fa:ImageAwesome Foreground="#2578a8" Height="20" Margin="2,0,4,0" Icon="Solid_Search"/>
+                            <TextBox Tag="Search" Height="30" Name="GroupNameFilterText" TextChanged="OnGroupsFilterTextChanged"/>
+                        </DockPanel>
+                        <!--#endregion-->
+                        
+                        <!--#region Add-->
+                        <Button Style="{StaticResource ButtonBase}" Command="{Binding CreateMenuListCommand}">
+                            <ContentControl >
+                                <fa:ImageAwesome Icon="Solid_FolderPlus" Foreground="#2578a8"/>
+                            </ContentControl>
+                        </Button>
+                        <!--#endregion-->
+                        
+                        <!--#region Delete-->
+                        <Button Style="{StaticResource ButtonBase}" Command="{Binding DeleteMenuListCommand}"  CommandParameter="{Binding SelectedSpaceData}">
+                            <ContentControl >
+                                <fa:ImageAwesome Icon="Solid_TrashAlt" Foreground="#2578a8"/>
+                            </ContentControl>
+                        </Button>
+                        <!--#endregion-->
+                        
+                    </StackPanel>
+                </DockPanel>
+                <!--#endregion-->
+
+                <!--#region SelectionList  (Left Menu)-->
+                <ListBox Background="#fcf7f7" ItemsSource="{Binding Source={StaticResource GroupsCollection}}" 
+                         DisplayMemberPath="Name" SelectedItem="{Binding SelectedSpaceData}"
+                         VirtualizingPanel.IsContainerVirtualizable="True"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling">
+
+                    <!--#region ContextMenu-->
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Add" Command="{Binding CreateMenuListCommand}"/>
+                            <MenuItem Header="Edit" Command="{Binding EditMenuListCommand}" CommandParameter="{Binding SelectedSpaceData}"/>
+                            <MenuItem Header="Delete" Command="{Binding DeleteMenuListCommand}"  CommandParameter="{Binding SelectedSpaceData}"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    <!--#endregion-->
+
+                    <ListBox.ItemsPanel >
+                        <ItemsPanelTemplate >
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+                <!--#endregion-->
+
+                    
+                
+                
+            </DockPanel>
+        </GroupBox>
+        <!--#endregion-->
+
+        <!--#region (RightPart)-->
+        <GroupBox Grid.Column="1" Grid.Row="1"  Header="{Binding SelectedSpaceData.Name, FallbackValue='Student', TargetNullValue='Not selected'}">
+            <DockPanel >
+                
+                <!--#region MenuWorkSpace(RightPart)-->
+                <DockPanel DockPanel.Dock="Top">
+                    <StackPanel Orientation="Horizontal" Background="#fcf7f7" Margin="0,3,0,3">
+
+                        <!--#region Search-->
+                        <DockPanel Margin="3" Width="300">
+                            <fa:ImageAwesome Foreground="#2578a8" Height="20" Margin="2,0,4,0" Icon="Solid_Search"/>
+                            <TextBox Tag="Search" Height="30" Text="{Binding FileFilterText, UpdateSourceTrigger=PropertyChanged}"/>
+                        </DockPanel>
+                        <!--#endregion-->
+
+                        <!--#region Add -->
+                        <Button Style="{StaticResource ButtonBase}" Command="{Binding AddNewFileCommand}" CommandParameter="{Binding SelectedSpaceData}">
+                            <ContentControl >
+                                <fa:ImageAwesome Icon="Brands_CreativeCommonsShare" Foreground="#2578a8"/>
+                            </ContentControl>
+                        </Button>
+                        <!--#endregion-->
+
+                        <!--#region Create -->
+                        <Button Style="{StaticResource ButtonBase}" Command="{Binding CreateNewFileCommand}" CommandParameter="{Binding SelectedSpaceData}">
+                            <ContentControl >
+                                <fa:ImageAwesome Icon="Solid_Plus" Foreground="#2578a8"/>
+                            </ContentControl>
+                        </Button>
+                        <!--#endregion-->
+
+                        <!--#region Delete -->
+                        <Button Style="{StaticResource ButtonBase}" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding SelectFile}">
+                            <ContentControl >
+                                <fa:ImageAwesome Icon="Solid_TrashAlt" Foreground="#2578a8"/>
+                            </ContentControl>
+                        </Button>
+                        <!--#endregion-->
+                        
+                    </StackPanel>
+                </DockPanel>
+                <!--#endregion-->
+
+                <!--#region WorkSpaceList-->
+                <DataGrid DisplayMemberPath="Name" Background="Gray" 
+                          ItemsSource="{Binding SelectedMenuList}" 
+                          SelectedItem="{Binding SelectFile}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          GridLinesVisibility="Vertical" 
+                          VerticalGridLinesBrush="DarkGray" AlternatingRowBackground="LightGray"
+                          RowHeight="25">
+
+                    <!--#region ContextMenu-->
+                    <DataGrid.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick" Command="{Binding OpenFileCommand}"/>
+                    </DataGrid.InputBindings>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Open" Command="{Binding OpenFileCommand}"/>
+                            <MenuItem Header="Edit" Command="{Binding EditFileCommand}" CommandParameter="{Binding SelectFile}"/>
+                            <MenuItem Header="Add" Command="{Binding AddNewFileCommand}" CommandParameter="{Binding SelectedSpaceData}"/>
+                            <MenuItem Header="Create" Command="{Binding CreateNewFileCommand}" CommandParameter="{Binding SelectedSpaceData}"/>
+                            <MenuItem Header="Delete" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding SelectFile}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <!--#endregion-->
+
+                    <!--#region Table layout-->
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="Size" Binding="{Binding Size}"/>
+                        <DataGridTextColumn Header="Date change" Binding="{Binding DateChanged, StringFormat=dd.MM.yyyy}"/>
+                        <DataGridTextColumn Header="dir" Binding="{Binding Directory}"/>
+                        <DataGridTextColumn Header="Tag" Binding="{Binding Tag}" Width="*"/>
+                    </DataGrid.Columns>
+                    <!--#endregion-->
+                    
+                </DataGrid>
+                <!--#endregion-->
+             
+            </DockPanel>
+        </GroupBox>
+        <!--#endregion-->
+ 
+    </Grid>
+</Window>
